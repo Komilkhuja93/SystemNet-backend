@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Komilxo'ja — AI Loyihachi</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080b10;
+    --surface: #0e1318;
+    --surface2: #141a22;
+    --border: #1e2a38;
+    --accent: #00d4ff;
+    --accent2: #7b5ea7;
+    --accent3: #00ff88;
+    --text: #e8edf5;
+    --text-muted: #6b7f96;
+    --text-dim: #3d5068;
+    --glow: rgba(0, 212, 255, 0.15);
+    --glow2: rgba(123, 94, 167, 0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.1s;
+    mix-blend-mode: screen;
+  }
+  .cursor-ring {
+    width: 36px; height: 36px;
+    border: 1.5px solid rgba(0,212,255,0.4);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    transition: all 0.12s ease;
+  }
+
+  /* Noise overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9997;
+    opacity: 0.4;
+  }
+
+  /* Floating orbs */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    z-index: 0;
+    animation: drift 12s ease-in-out infinite alternate;
+  }
+  .orb-1 { width: 400px; height: 400px; background: radial-gradient(circle, rgba(0,212,255,0.07), transparent); top: -100px; right: -100px; animation-delay: 0s; }
+  .orb-2 { width: 300px; height: 300px; background: radial-gradient(circle, rgba(123,94,167,0.08), transparent); bottom: 20%; left: -80px; animation-delay: -4s; }
+  .orb-3 { width: 250px; height: 250px; background: radial-gradient(circle, rgba(0,255,136,0.05), transparent); top: 50%; right: 10%; animation-delay: -8s; }
+
+  @keyframes drift {
+    from { transform: translate(0, 0) scale(1); }
+    to { transform: translate(30px, -40px) scale(1.1); }
+  }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(8, 11, 16, 0.7);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(30,42,56,0.5);
+  }
+
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+  .nav-logo span { color: var(--accent); }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+  .nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+
+  .nav-cta {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 8px 20px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: none;
+    transition: all 0.2s;
+  }
+  .nav-cta:hover {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 120px 40px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,212,255,0.06);
+    border: 1px solid rgba(0,212,255,0.2);
+    padding: 6px 16px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 32px;
+    animation: fadeUp 0.6s ease both;
+  }
+  .badge-dot {
+    width: 6px; height: 6px;
+    background: var(--accent3);
+    border-radius: 50%;
+    animation: blink 1.4s ease-in-out infinite;
+  }
+  @keyframes blink {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.2; }
+  }
+
+  .hero-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    margin-bottom: 28px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+  .hero-title .line2 {
+    display: block;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-desc {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    max-width: 520px;
+    margin-bottom: 44px;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, var(--accent), #0099cc);
+    color: var(--bg);
+    padding: 14px 32px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-decoration: none;
+    cursor: none;
+    transition: all 0.25s;
+    clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px rgba(0,212,255,0.3);
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 14px 32px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: none;
+    transition: all 0.25s;
+    background: rgba(14,19,24,0.5);
+  }
+  .btn-secondary:hover {
+    border-color: var(--text-muted);
+    color: var(--text);
+    background: var(--surface);
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 48px;
+    margin-top: 64px;
+    padding-top: 40px;
+    border-top: 1px solid var(--border);
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.04em;
+  }
+  .stat-num span { color: var(--accent); }
+  .stat-label {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 2px;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* SECTION commons */
+  section {
+    padding: 100px 40px;
+    position: relative;
+    z-index: 1;
+  }
+  .section-tag {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-bottom: 16px;
+  }
+  .section-sub {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    max-width: 480px;
+    line-height: 1.7;
+    margin-bottom: 60px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  /* SERVICES */
+  #xizmatlar { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-top: 8px;
+  }
+
+  .service-card {
+    background: var(--surface2);
+    padding: 36px 32px;
+    transition: background 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .service-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--accent), transparent);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .service-card:hover { background: #161e29; }
+  .service-card:hover::before { opacity: 1; }
+
+  .service-icon {
+    font-size: 1.8rem;
+    margin-bottom: 16px;
+    display: block;
+  }
+  .service-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+  .service-desc {
+    font-size: 0.83rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .service-price {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent3);
+  }
+
+  /* PORTFOLIO */
+  .portfolio-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .portfolio-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 28px 24px;
+    position: relative;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .portfolio-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(0,212,255,0.3);
+  }
+  .portfolio-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--accent);
+    opacity: 0.2;
+    position: absolute;
+    top: 16px; right: 20px;
+    letter-spacing: -0.05em;
+  }
+  .portfolio-tag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+  .portfolio-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .portfolio-sub {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  /* REVIEWS */
+  #sharhlar { background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+
+  .reviews-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .review-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 28px 24px;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .review-card:hover { border-color: rgba(123,94,167,0.4); }
+  .review-stars { color: #f5c842; font-size: 0.85rem; margin-bottom: 14px; letter-spacing: 2px; }
+  .review-text {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    line-height: 1.65;
+    margin-bottom: 20px;
+    font-style: italic;
+  }
+  .review-author {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .review-date {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+  .review-quote {
+    position: absolute;
+    top: 20px; right: 20px;
+    font-size: 2.5rem;
+    color: var(--accent2);
+    opacity: 0.12;
+    font-family: Georgia, serif;
+    line-height: 1;
+  }
+
+  /* ORDER FORM */
+  #buyurtma { background: var(--bg); }
+
+  .order-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: start;
+  }
+  .order-info h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+  .order-feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .feature-icon {
+    width: 38px; height: 38px;
+    background: rgba(0,212,255,0.07);
+    border: 1px solid rgba(0,212,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .feature-text strong {
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .feature-text span {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  .form-group { margin-bottom: 16px; }
+  .form-group label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+  .form-control {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 16px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+    cursor: none;
+  }
+  .form-control:focus { border-color: var(--accent); }
+  .form-control::placeholder { color: var(--text-dim); }
+  select.form-control { cursor: none; }
+  textarea.form-control { resize: vertical; min-height: 100px; }
+
+  .form-submit {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent), #0099cc);
+    color: var(--bg);
+    border: none;
+    padding: 14px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: none;
+    transition: all 0.25s;
+    margin-top: 8px;
+  }
+  .form-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 24px rgba(0,212,255,0.3);
+  }
+
+  /* CONTACT */
+  #boglanish { background: var(--surface); border-top: 1px solid var(--border); }
+
+  .contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  .contact-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 24px 20px;
+    text-decoration: none;
+    display: block;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .contact-card::after {
+    content: '→';
+    position: absolute;
+    bottom: 16px; right: 20px;
+    color: var(--accent);
+    font-size: 1rem;
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: all 0.2s;
+  }
+  .contact-card:hover {
+    border-color: var(--accent);
+    background: rgba(0,212,255,0.03);
+  }
+  .contact-card:hover::after {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  .contact-type {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+  .contact-icon { font-size: 1.4rem; margin-bottom: 10px; display: block; }
+  .contact-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .contact-sub {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* FOOTER */
+  footer {
+    padding: 40px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+  .footer-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+  .footer-logo span { color: var(--accent); }
+  .footer-copy {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+  }
+  .footer-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    color: var(--accent3);
+    font-weight: 600;
+  }
+  .status-dot {
+    width: 6px; height: 6px;
+    background: var(--accent3);
+    border-radius: 50%;
+    animation: blink 1.4s ease-in-out infinite;
+  }
+
+  /* DIVIDER */
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 0;
+  }
+
+  /* SCROLL REVEAL */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: all 0.6s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    nav { padding: 16px 20px; }
+    .nav-links { display: none; }
+    .hero { padding: 100px 20px 60px; }
+    section { padding: 70px 20px; }
+    .hero-stats { gap: 28px; flex-wrap: wrap; }
+    .portfolio-grid, .reviews-grid { grid-template-columns: 1fr; }
+    .order-wrapper { grid-template-columns: 1fr; gap: 40px; }
+    footer { flex-direction: column; gap: 16px; text-align: center; padding: 30px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Komil<span>.</span>dev</div>
+  <ul class="nav-links">
+    <li><a href="#xizmatlar">Xizmatlar</a></li>
+    <li><a href="#portfolio">Portfolio</a></li>
+    <li><a href="#sharhlar">Sharhlar</a></li>
+    <li><a href="#boglanish">Aloqa</a></li>
+  </ul>
+  <a href="https://t.me/Komilkhuja" class="nav-cta" target="_blank">Buyurtma →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      Bo'sh — Loyiha qabul qilaman
+    </div>
+    <h1 class="hero-title">
+      Komilxo'ja
+      <span class="line2">AI Loyihachi</span>
+    </h1>
+    <p class="hero-desc">
+      Kamera, Face ID, domofon, server va IT tizimlarni professional darajada o'rnatish va sozlash. Tez, sifatli, kafolat bilan.
+    </p>
+    <div class="hero-actions">
+      <a href="#buyurtma" class="btn-primary">
+        📩 Buyurtma berish
+      </a>
+      <a href="#xizmatlar" class="btn-secondary">
+        Xizmatlarni ko'rish
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div>
+        <div class="stat-num">50<span>+</span></div>
+        <div class="stat-label">Bajarilgan loyiha</div>
+      </div>
+      <div>
+        <div class="stat-num">3<span>+</span></div>
+        <div class="stat-label">Yil tajriba</div>
+      </div>
+      <div>
+        <div class="stat-num">5<span>★</span></div>
+        <div class="stat-label">Mijozlar bahosi</div>
+      </div>
+      <div>
+        <div class="stat-num">6</div>
+        <div class="stat-label">Oy kafolat</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="xizmatlar">
+  <div class="container">
+    <div class="section-tag">— 01 Xizmatlar</div>
+    <h2 class="section-title">Nima qilamiz?</h2>
+    <p class="section-sub">Xavfsizlik tizimlari va IT infratuzilma bo'yicha to'liq yechimlar.</p>
+    <div class="services-grid reveal">
+      <div class="service-card">
+        <span class="service-icon">📷</span>
+        <div class="service-name">Kamera O'rnatish</div>
+        <div class="service-desc">IP va HD kameralar, NVR/DVR ulash, telefonga real-time monitoring. Hikvision, Dahua, EZVIZ.</div>
+        <div class="service-price">Narxi kelishiladi</div>
+      </div>
+      <div class="service-card">
+        <span class="service-icon">🪪</span>
+        <div class="service-name">Face ID Tizimi</div>
+        <div class="service-desc">Yuz tanish texnologiyasi orqali kirish nazorati. Ofis, zavod va binolar uchun ideal.</div>
+        <div class="service-price">Narxi kelishiladi</div>
+      </div>
+      <div class="service-card">
+        <span class="service-icon">🔔</span>
+        <div class="service-name">Domofon O'rnatish</div>
+        <div class="service-desc">Video domofon, smart qo'ng'iroq tizimlari. Ko'p qavatli binolar va ofislar uchun.</div>
+        <div class="service-price">Narxi kelishiladi</div>
+      </div>
+      <div class="service-card">
+        <span class="service-icon">🔗</span>
+        <div class="service-name">Tizimlarni Birlashtirish</div>
+        <div class="service-desc">Turli xavfsizlik qurilmalarini bitta markaziy platformaga ulash va integratsiya qilish.</div>
+        <div class="service-price">Narxi kelishiladi</div>
+      </div>
+      <div class="service-card">
+        <span class="service-icon">🖥️</span>
+        <div class="service-name">Server O'rnatish</div>
+        <div class="service-desc">Server konfiguratsiyasi, sozlash, tarmoq infratuzilmasi. Ma'lumotlarni saqlash va himoya.</div>
+        <div class="service-price">Narxi kelishiladi</div>
+      </div>
+      <div class="service-card">
+        <span class="service-icon">💻</span>
+        <div class="service-name">Kompyuter / IT Xizmatlari</div>
+        <div class="service-desc">Dasturiy ta'minot, tarmoq sozlash, texnik yordam. Korporativ va individual mijozlar uchun.</div>
+        <div class="service-price">Narxi kelishiladi</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PORTFOLIO -->
+<section id="portfolio">
+  <div class="container">
+    <div class="section-tag">— 02 Portfolio</div>
+    <h2 class="section-title">Bajarilgan ishlar</h2>
+    <p class="section-sub">Real loyihalardan namunalar — kichik ofisdan yirik korxonagacha.</p>
+    <div class="portfolio-grid reveal">
+      <div class="portfolio-card">
+        <span class="portfolio-num">01</span>
+        <div class="portfolio-tag">Kamera · NVR</div>
+        <div class="portfolio-title">Do'kon — 4 ta IP kamera</div>
+        <div class="portfolio-sub">Hikvision 4MP + NVR ulash, telefonga monitoring</div>
+      </div>
+      <div class="portfolio-card">
+        <span class="portfolio-num">02</span>
+        <div class="portfolio-tag">Face ID · Kirish nazorati</div>
+        <div class="portfolio-title">Ofis — Yuz tanish tizimi</div>
+        <div class="portfolio-sub">30 xodim uchun Face ID kirishnorozlik tizimi</div>
+      </div>
+      <div class="portfolio-card">
+        <span class="portfolio-num">03</span>
+        <div class="portfolio-tag">Server · Tarmoq</div>
+        <div class="portfolio-title">Kompaniya server xonasi</div>
+        <div class="portfolio-sub">Dell server, rack sozlash, LAN infratuzilma</div>
+      </div>
+      <div class="portfolio-card">
+        <span class="portfolio-num">04</span>
+        <div class="portfolio-tag">Kamera · 16ta</div>
+        <div class="portfolio-title">Zavod — 16 kamera tizimi</div>
+        <div class="portfolio-sub">PTZ + doimiy kamera, 24/7 monitoring</div>
+      </div>
+      <div class="portfolio-card">
+        <span class="portfolio-num">05</span>
+        <div class="portfolio-tag">Domofon · Bino</div>
+        <div class="portfolio-title">Ko'p qavatli turar-joy</div>
+        <div class="portfolio-sub">Video domofon, har qavatga monitor o'rnatish</div>
+      </div>
+      <div class="portfolio-card">
+        <span class="portfolio-num">06</span>
+        <div class="portfolio-tag">Integratsiya</div>
+        <div class="portfolio-title">Smart xavfsizlik markazi</div>
+        <div class="portfolio-sub">Kamera + Face ID + domofon — 1 ta platform</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section id="sharhlar">
+  <div class="container">
+    <div class="section-tag">— 03 Sharhlar</div>
+    <h2 class="section-title">Mijozlar nima deydi?</h2>
+    <p class="section-sub">120+ sharh asosida 5.0 yulduz reyting.</p>
+    <div class="reviews-grid reveal">
+      <div class="review-card">
+        <span class="review-quote">"</span>
+        <div class="review-stars">★★★★★</div>
+        <div class="review-text">Ofisimizga Face ID va kamera o'rnatdi. Hammasi perfect ishlayapti. Juda tez va professional. Albatta tavsiya qilaman!</div>
+        <div class="review-author">Bobur T.</div>
+        <div class="review-date">2 hafta oldin</div>
+      </div>
+      <div class="review-card">
+        <span class="review-quote">"</span>
+        <div class="review-stars">★★★★★</div>
+        <div class="review-text">Server o'rnatish va sozlash uchun chaqirdik. Narxi adolatli, ishi sifatli. Muammo bo'lsa kafolat bilan kelib tuzatadi.</div>
+        <div class="review-author">Dilnoza M.</div>
+        <div class="review-date">1 oy oldin</div>
+      </div>
+      <div class="review-card">
+        <span class="review-quote">"</span>
+        <div class="review-stars">★★★★★</div>
+        <div class="review-text">Do'konimizga 8 ta kamera o'rnatdi va NVR uladi. Telefonga real vaqtda ko'rinadi. Rahmat Komilxo'ja aka!</div>
+        <div class="review-author">Sardor N.</div>
+        <div class="review-date">2 oy oldin</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ORDER -->
+<section id="buyurtma">
+  <div class="container">
+    <div class="order-wrapper">
+      <div class="order-info reveal">
+        <div class="section-tag">— 04 Buyurtma</div>
+        <h2 class="section-title">Loyiha boshlaylik</h2>
+        <p class="section-sub" style="margin-bottom:40px;">Formani to'ldiring — 15 daqiqa ichida javob beraman va qulay vaqtni kelishib olamiz.</p>
+        <div class="order-feature">
+          <div class="feature-icon">⚡</div>
+          <div class="feature-text">
+            <strong>Tez javob</strong>
+            <span>15 daqiqa ichida bog'lanaman</span>
+          </div>
+        </div>
+        <div class="order-feature">
+          <div class="feature-icon">🛡️</div>
+          <div class="feature-text">
+            <strong>6 oy kafolat</strong>
+            <span>Barcha o'rnatish ishlari kafolatli</span>
+          </div>
+        </div>
+        <div class="order-feature">
+          <div class="feature-icon">📍</div>
+          <div class="feature-text">
+            <strong>Kelib ko'rish bepul</strong>
+            <span>Narx ob'ektga kelib belgilanadi</span>
+          </div>
+        </div>
+      </div>
+      <div class="order-form reveal">
+        <div class="form-group">
+          <label>Ismingiz</label>
+          <input type="text" class="form-control" placeholder="To'liq ismingiz" id="inp-name">
+        </div>
+        <div class="form-group">
+          <label>Telefon raqam</label>
+          <input type="tel" class="form-control" placeholder="+998 XX XXX XX XX" id="inp-phone">
+        </div>
+        <div class="form-group">
+          <label>Xizmat turi</label>
+          <select class="form-control" id="inp-service">
+            <option value="">— Tanlang —</option>
+            <option>📷 Kamera o'rnatish</option>
+            <option>🪪 Face ID tizimi</option>
+            <option>🔔 Domofon o'rnatish</option>
+            <option>🔗 Tizimlarni birlashtirish</option>
+            <option>🖥️ Server o'rnatish / sozlash</option>
+            <option>💻 Kompyuter / IT xizmatlari</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Qo'shimcha ma'lumot</label>
+          <textarea class="form-control" placeholder="Xona soni, ob'ekt turi, manzil..." id="inp-msg"></textarea>
+        </div>
+        <button class="form-submit" onclick="sendOrder()">📩 Telegramga yuborish</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="boglanish">
+  <div class="container">
+    <div class="section-tag">— 05 Aloqa</div>
+    <h2 class="section-title">Bog'lanish</h2>
+    <p class="section-sub">Har qanday qulay usulda murojaat qiling.</p>
+    <div class="contact-grid reveal">
+      <a href="https://t.me/Komilkhuja" target="_blank" class="contact-card">
+        <span class="contact-icon">✈️</span>
+        <div class="contact-type">Telegram</div>
+        <div class="contact-value">@Komilkhuja</div>
+        <div class="contact-sub">Tez javob — 15 daqiqa</div>
+      </a>
+      <a href="https://wa.me/998935665526" target="_blank" class="contact-card">
+        <span class="contact-icon">💬</span>
+        <div class="contact-type">WhatsApp</div>
+        <div class="contact-value">+998 93 566 55 26</div>
+        <div class="contact-sub">Yozing yoki qo'ng'iroq qiling</div>
+      </a>
+      <a href="tel:+998935665526" class="contact-card">
+        <span class="contact-icon">📞</span>
+        <div class="contact-type">Qo'ng'iroq</div>
+        <div class="contact-value">+998 93 566 55 26</div>
+        <div class="contact-sub">09:00 – 20:00 har kuni</div>
+      </a>
+      <a href="#" class="contact-card">
+        <span class="contact-icon">📍</span>
+        <div class="contact-type">Xizmat hududi</div>
+        <div class="contact-value">Toshkent shahri</div>
+        <div class="contact-sub">O'zbekiston bo'ylab kamera kuzatuv tizimi va server xizmatlari</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Komil<span>.</span>dev</div>
+  <div class="footer-copy">© 2025 Komilxo'ja AI Loyihachi</div>
+  <div class="footer-status">
+    <span class="status-dot"></span>
+    Bo'sh — Loyiha qabul qilaman
+  </div>
+</footer>
+
+<script>
+  // Cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx - 4 + 'px';
+    cursor.style.top = my - 4 + 'px';
+  });
+  (function animRing() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.left = rx - 18 + 'px';
+    ring.style.top = ry - 18 + 'px';
+    requestAnimationFrame(animRing);
+  })();
+  document.querySelectorAll('a,button,input,select,textarea').forEach(el => {
+    el.addEventListener('mouseenter', () => { cursor.style.transform = 'scale(2.5)'; ring.style.transform = 'scale(1.4)'; ring.style.borderColor = 'rgba(0,212,255,0.7)'; });
+    el.addEventListener('mouseleave', () => { cursor.style.transform = 'scale(1)'; ring.style.transform = 'scale(1)'; ring.style.borderColor = 'rgba(0,212,255,0.4)'; });
+  });
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 80);
+      }
+    });
+  }, { threshold: 0.08 });
+  reveals.forEach(r => observer.observe(r));
+
+  // Order form — Telegram bot yoki link orqali yuborish
+  function sendOrder() {
+    const name = document.getElementById('inp-name').value.trim();
+    const phone = document.getElementById('inp-phone').value.trim();
+    const service = document.getElementById('inp-service').value;
+    const msg = document.getElementById('inp-msg').value.trim();
+
+    if (!name || !phone || !service) {
+      alert('Iltimos, ism, telefon va xizmat turini kiriting.');
+      return;
+    }
+
+    // Telegram ga yuborish — o'z username yoki botingizni o'rnatiladi
+    const text = encodeURIComponent(
+      `📩 YANGI BUYURTMA\n\n👤 Ism: ${name}\n📞 Tel: ${phone}\n🔧 Xizmat: ${service}\n📝 Izoh: ${msg || 'Yo\'q'}`
+    );
+    window.open(`https://t.me/Komilkhuja?text=${text}`, '_blank');
+  }
+
+  // Counter animation
+  document.querySelectorAll('.stat-num').forEach(el => {
+    const txt = el.textContent;
+    const num = parseInt(txt);
+    if (isNaN(num)) return;
+    const suffix = txt.replace(String(num), '');
+    let cur = 0;
+    const step = Math.max(1, Math.floor(num / 40));
+    const t = setInterval(() => {
+      cur = Math.min(cur + step, num);
+      el.innerHTML = cur + `<span>${suffix}</span>`;
+      if (cur >= num) clearInterval(t);
+    }, 40);
+  });
+</script>
+</body>
+</html>

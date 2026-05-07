@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KP Pro — Komilxo'ja AI Loyihachi</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="okvision_db.js"></script>
+<style>
+:root{
+  --bg:#07090f;--sf:#0d1117;--sf2:#161b22;--sf3:#1c2330;
+  --bd:#21262d;--bd2:#30363d;
+  --ac:#58a6ff;--ac2:#3fb950;--ac3:#f78166;--ac4:#e3b341;
+  --tx:#e6edf3;--tx2:#8b949e;--tx3:#484f58;
+  --std:#58a6ff;--mid:#3fb950;--prm:#e3b341;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--tx);font-family:'Inter',sans-serif;min-height:100vh}
+a{text-decoration:none;color:inherit}
+
+.topbar{background:rgba(7,9,15,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--bd);padding:10px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:200;flex-wrap:wrap}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;color:var(--tx)}
+.logo span{color:var(--ac)}
+.topbar-badge{font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--tx2);padding:3px 8px;border:1px solid var(--bd2);border-radius:4px}
+.topbar-right{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;font-family:'Inter',sans-serif;font-size:.78rem;font-weight:500;border-radius:6px;border:1px solid var(--bd2);background:var(--sf2);color:var(--tx2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:hover{background:var(--sf3);color:var(--tx);border-color:var(--tx2)}
+.btn-blue{background:#1f6feb;border-color:#1f6feb;color:#fff}
+.btn-blue:hover{background:#388bfd;border-color:#388bfd;color:#fff}
+.btn-green{background:#238636;border-color:#238636;color:#fff}
+.btn-green:hover{background:#2ea043;color:#fff}
+.btn-sm{padding:4px 10px;font-size:.72rem}
+
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--bd);background:var(--sf);padding:0 20px;overflow-x:auto}
+.tab-btn{padding:10px 16px;font-size:.8rem;font-weight:500;color:var(--tx2);border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;margin-bottom:-1px;white-space:nowrap}
+.tab-btn:hover{color:var(--tx)}
+.tab-btn.active{color:var(--ac);border-bottom-color:var(--ac)}
+
+.page{display:none;padding:16px}
+.page.active{display:block}
+
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:14px;margin-bottom:14px}
+
+.form-row{display:grid;gap:10px;margin-bottom:10px}
+.form-row-2{grid-template-columns:1fr 1fr}
+.form-row-3{grid-template-columns:1fr 1fr 1fr}
+.form-row-4{grid-template-columns:1fr 1fr 1fr 1fr}
+.fg{display:flex;flex-direction:column;gap:3px}
+.fg.full{grid-column:1/-1}
+.lbl{font-size:.65rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--tx3)}
+.inp{padding:7px 10px;background:var(--sf2);border:1px solid var(--bd2);color:var(--tx);font-family:'Inter',sans-serif;font-size:.82rem;border-radius:6px;outline:none;transition:border-color .15s;width:100%}
+.inp:focus{border-color:var(--ac);background:var(--sf3)}
+.inp::placeholder{color:var(--tx3)}
+textarea.inp{resize:vertical;min-height:60px}
+
+/* KP META */
+.kp-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;background:var(--sf);border:1px solid var(--bd);border-radius:8px;padding:12px}
+
+/* VARIANTS */
+.variants-bar{display:flex;gap:6px;flex-wrap:wrap}
+.var-tab{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:6px;border:1px solid var(--bd2);background:var(--sf2);font-size:.75rem;font-weight:500;cursor:pointer;transition:all .15s;color:var(--tx2)}
+.var-tab:hover{background:var(--sf3)}
+.var-tab.active.std{border-color:var(--std);color:var(--std);background:rgba(88,166,255,.08)}
+.var-tab.active.mid{border-color:var(--mid);color:var(--mid);background:rgba(63,185,80,.08)}
+.var-tab.active.prm{border-color:var(--prm);color:var(--prm);background:rgba(227,179,65,.08)}
+.vdot{width:7px;height:7px;border-radius:50%}
+.vdot.std{background:var(--std)}.vdot.mid{background:var(--mid)}.vdot.prm{background:var(--prm)}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--bd);border-radius:8px}
+table{width:100%;border-collapse:collapse;font-size:.77rem;min-width:1050px}
+thead tr{background:var(--sf2)}
+th{padding:8px 7px;text-align:left;font-size:.63rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--tx2);border-bottom:1px solid var(--bd);white-space:nowrap}
+td{padding:6px 7px;border-bottom:1px solid rgba(33,38,45,.5);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:rgba(255,255,255,.012)}
+th:first-child,td:first-child{text-align:center;width:32px;color:var(--tx2)}
+.ic{width:40px;height:40px;border-radius:5px;background:var(--sf2);border:1px solid var(--bd2);display:flex;align-items:center;justify-content:center;font-size:1.1rem;overflow:hidden;cursor:pointer;position:relative}
+.ic img{width:100%;height:100%;object-fit:cover}
+.icu{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.ci{width:100%;padding:4px 6px;background:transparent;border:1px solid transparent;color:var(--tx);font-family:'Inter',sans-serif;font-size:.77rem;border-radius:4px;outline:none;transition:all .1s}
+.ci:focus{border-color:var(--ac);background:var(--sf2)}
+.ci:hover{background:var(--sf2)}
+.ci::placeholder{color:var(--tx3)}
+.ci.nc{text-align:center}
+.ci.nr{text-align:right}
+.us{width:100%;padding:4px 5px;background:transparent;border:1px solid transparent;color:var(--tx);font-family:'Inter',sans-serif;font-size:.77rem;border-radius:4px;outline:none;cursor:pointer}
+.us:focus{border-color:var(--ac);background:var(--sf2)}
+
+/* AUTOCOMPLETE */
+.aw{position:relative}
+.al{position:absolute;top:calc(100% + 3px);left:0;width:480px;background:var(--sf);border:1px solid var(--ac);border-radius:8px;z-index:400;max-height:220px;overflow-y:auto;display:none;box-shadow:0 8px 32px rgba(0,0,0,.8)}
+.al.open{display:block}
+.ai{padding:7px 10px;cursor:pointer;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--bd);transition:background .1s}
+.ai:last-child{border-bottom:none}
+.ai:hover,.ai.focused{background:var(--sf2)}
+.ai-img{width:28px;height:28px;border-radius:3px;background:var(--sf2);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;overflow:hidden}
+.ai-img img{width:100%;height:100%;object-fit:cover}
+.ai-model{font-size:.77rem;font-weight:600;color:var(--tx)}
+.ai-name{font-size:.67rem;color:var(--tx2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px}
+.ai-price{font-size:.67rem;color:var(--ac);margin-left:auto;white-space:nowrap;flex-shrink:0}
+.ai-cat{font-size:.6rem;color:var(--tx3);display:block}
+
+/* ADD ROW */
+.add-row{display:flex;align-items:center;gap:7px;padding:9px 12px;color:var(--tx3);font-size:.77rem;cursor:pointer;border-top:1px dashed var(--bd);transition:color .12s;width:100%;background:none;border-left:none;border-right:none;border-bottom:none}
+.add-row:hover{color:var(--ac)}
+
+/* TOTALS */
+.totals{display:flex;justify-content:flex-end;padding:12px 14px;border-top:1px solid var(--bd);background:var(--sf);border-radius:0 0 8px 8px}
+.totals-in{display:flex;flex-direction:column;gap:4px;min-width:250px}
+.tr2{display:flex;justify-content:space-between;font-size:.78rem}
+.tl2{color:var(--tx2)}.tv2{font-weight:500}
+.tg2{font-size:.92rem;font-weight:700;padding-top:6px;margin-top:3px;border-top:1px solid var(--bd2)}
+.tg2 .tv2{color:var(--ac);font-size:.95rem}
+
+/* PRODUCTS PAGE */
+.db-toolbar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.db-stats{font-size:.72rem;color:var(--tx2);padding:4px 10px;background:var(--sf2);border:1px solid var(--bd);border-radius:4px}
+.cat-filter{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.cat-btn{padding:4px 10px;font-size:.7rem;font-weight:500;border-radius:10px;border:1px solid var(--bd2);background:var(--sf2);color:var(--tx2);cursor:pointer;transition:all .12s}
+.cat-btn:hover{border-color:var(--ac);color:var(--ac)}
+.cat-btn.active{background:var(--ac);border-color:var(--ac);color:#000}
+.prod-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+.pc{background:var(--sf2);border:1px solid var(--bd2);border-radius:8px;padding:10px;cursor:pointer;transition:all .13s;position:relative}
+.pc:hover{border-color:var(--ac);background:var(--sf3)}
+.pc-img{width:44px;height:44px;border-radius:5px;background:var(--sf3);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin-bottom:7px;overflow:hidden}
+.pc-img img{width:100%;height:100%;object-fit:cover}
+.pc-model{font-size:.74rem;font-weight:600;margin-bottom:2px}
+.pc-name{font-size:.65rem;color:var(--tx2);margin-bottom:5px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.pc-price{font-size:.72rem;font-weight:600;color:var(--ac)}
+.pc-inst{font-size:.65rem;color:var(--ac2);margin-top:2px}
+.pc-cat{font-size:.6rem;color:var(--tx3);margin-top:3px}
+.pc-del{position:absolute;top:7px;right:7px;background:none;border:none;color:var(--tx3);cursor:pointer;font-size:.8rem;opacity:0}
+.pc:hover .pc-del{opacity:1}
+.pc-del:hover{color:var(--ac3)}
+
+/* SAVED */
+.kp-li{background:var(--sf2);border:1px solid var(--bd2);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:12px;margin-bottom:8px;transition:all .13s}
+.kp-li:hover{border-color:var(--ac)}
+.kp-li-info{flex:1}
+.kp-li-title{font-size:.85rem;font-weight:600;margin-bottom:3px}
+.kp-li-meta{font-size:.7rem;color:var(--tx2);display:flex;gap:8px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:8px;font-size:.62rem;font-weight:600}
+.bs{background:rgba(88,166,255,.1);color:var(--std);border:1px solid rgba(88,166,255,.2)}
+.bm{background:rgba(63,185,80,.1);color:var(--mid);border:1px solid rgba(63,185,80,.2)}
+.bp{background:rgba(227,179,65,.1);color:var(--prm);border:1px solid rgba(227,179,65,.2)}
+.kp-li-acts{display:flex;gap:5px;flex-shrink:0}
+
+/* PREVIEW */
+.prev-wrap{background:var(--bg)}
+.prev-hdr{background:linear-gradient(135deg,#0d1117,#161b22);border-bottom:1px solid var(--bd);padding:24px 28px}
+.prev-company{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.prev-logo-box{width:44px;height:44px;border-radius:8px;background:var(--ac);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:1rem;color:#000}
+.prev-company-name{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800}
+.prev-company-sub{font-size:.75rem;color:var(--tx2);margin-top:1px}
+.prev-title{font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;letter-spacing:-.02em;margin-bottom:7px}
+.prev-meta{display:flex;gap:16px;font-size:.75rem;color:var(--tx2);flex-wrap:wrap}
+.prev-vars{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:20px 28px}
+.vc{background:var(--sf);border:1px solid var(--bd2);border-radius:10px;overflow:hidden;transition:all .18s;cursor:pointer}
+.vc:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.4)}
+.vc.sel{border-width:2px}
+.vc.sel.std{border-color:var(--std);box-shadow:0 0 0 3px rgba(88,166,255,.1)}
+.vc.sel.mid{border-color:var(--mid);box-shadow:0 0 0 3px rgba(63,185,80,.1)}
+.vc.sel.prm{border-color:var(--prm);box-shadow:0 0 0 3px rgba(227,179,65,.1)}
+.vc-hdr{padding:11px 14px;font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.vc-hdr.std{background:rgba(88,166,255,.08);color:var(--std)}
+.vc-hdr.mid{background:rgba(63,185,80,.08);color:var(--mid)}
+.vc-hdr.prm{background:rgba(227,179,65,.08);color:var(--prm)}
+.vc-price{padding:12px 14px 6px;font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800}
+.vc-sub{padding:0 14px 12px;font-size:.68rem;color:var(--tx2)}
+.vc-items{padding:0 14px 14px;display:flex;flex-direction:column;gap:5px}
+.vi{display:flex;align-items:center;gap:7px;padding:5px 7px;background:var(--sf2);border-radius:4px}
+.vi-img{width:26px;height:26px;border-radius:3px;background:var(--sf3);display:flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0;overflow:hidden}
+.vi-img img{width:100%;height:100%;object-fit:cover}
+.vi-i{flex:1;min-width:0}
+.vi-m{font-size:.7rem;font-weight:600}
+.vi-s{font-size:.62rem;color:var(--tx2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vi-p{font-size:.65rem;font-weight:600;color:var(--ac);flex-shrink:0;white-space:nowrap}
+.prev-detail{padding:0 28px 20px}
+.dtbl{width:100%;border-collapse:collapse;font-size:.75rem;background:var(--sf);border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+.dtbl th{padding:8px 9px;background:var(--sf2);border-bottom:1px solid var(--bd);font-size:.63rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--tx2);text-align:left}
+.dtbl td{padding:8px 9px;border-bottom:1px solid rgba(33,38,45,.4)}
+.dtbl tr:last-child td{border-bottom:none}
+.prev-footer{padding:20px 28px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;background:var(--sf)}
+.pf-contacts{display:flex;gap:14px;flex-wrap:wrap;font-size:.75rem;color:var(--tx2)}
+
+/* MODAL */
+.mbg{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.mbg.open{display:flex}
+.md{background:var(--sf);border:1px solid var(--bd2);border-radius:10px;padding:20px;width:440px;max-width:94vw;max-height:88vh;overflow-y:auto}
+.md h3{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;margin-bottom:14px}
+.md-acts{display:flex;gap:7px;justify-content:flex-end;margin-top:14px}
+.md-img{width:70px;height:70px;border-radius:7px;background:var(--sf2);border:2px dashed var(--bd2);display:flex;align-items:center;justify-content:center;font-size:1.8rem;cursor:pointer;margin:0 auto 12px;overflow:hidden}
+.md-img:hover{border-color:var(--ac)}
+.md-img img{width:100%;height:100%;object-fit:cover}
+
+/* NOTIF */
+.nt{position:fixed;bottom:18px;right:18px;background:var(--sf);border:1px solid var(--bd2);padding:9px 14px;border-radius:7px;font-size:.78rem;font-weight:500;z-index:9999;opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none;display:flex;align-items:center;gap:7px;box-shadow:0 4px 18px rgba(0,0,0,.5)}
+.nt.show{opacity:1;transform:translateY(0)}
+.nt.s{border-color:var(--ac2);color:var(--ac2)}
+.nt.e{border-color:var(--ac3);color:var(--ac3)}
+.nt.i{border-color:var(--ac);color:var(--ac)}
+
+.sw2{position:relative}
+.si2{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--tx3);pointer-events:none;font-size:.85rem}
+.sinp2{padding-left:28px}
+
+.empty2{text-align:center;padding:40px 20px;color:var(--tx3)}
+.ei2{font-size:2.5rem;margin-bottom:8px;opacity:.25}
+
+@media(max-width:768px){
+  .prev-vars{grid-template-columns:1fr}
+  .kp-meta{grid-template-columns:1fr 1fr}
+  .prod-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+}
+</style>
+</head>
+<body>
+
+<div class="nt" id="nt"></div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a href="index.html" class="logo">Komil<span>.</span>dev</a>
+  <span class="topbar-badge">📋 KP Pro</span>
+  <div class="topbar-right">
+    <a href="calculator.html" class="btn btn-sm">💾 HDD Kalkulyator</a>
+    <button class="btn btn-sm" onclick="openEmailMod()">📧 Email</button>
+    <button class="btn btn-sm" onclick="doPreview()">👁 Ko'rish</button>
+    <button class="btn btn-sm btn-blue" onclick="exportPDF()">📄 PDF</button>
+    <button class="btn btn-sm btn-green" onclick="saveKP()">💾 Saqlash</button>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('editor',this)">✏️ KP Yaratish</button>
+  <button class="tab-btn" onclick="showTab('products',this)">📦 Mahsulot bazasi</button>
+  <button class="tab-btn" onclick="showTab('saved',this)">🗂 Saqlangan</button>
+  <button class="tab-btn" onclick="showTab('preview',this)">👁 Mijoz ko'rinishi</button>
+</div>
+
+<!-- ══ EDITOR ══ -->
+<div class="page active" id="tab-editor">
+  <div style="max-width:1400px;margin:0 auto">
+    <div class="kp-meta">
+      <div class="fg"><div class="lbl">Mijoz</div><input class="inp" id="kpC" placeholder="Mijoz nomi"></div>
+      <div class="fg"><div class="lbl">Ob'ekt / Manzil</div><input class="inp" id="kpO" placeholder="Manzil"></div>
+      <div class="fg"><div class="lbl">Sana</div><input class="inp" type="date" id="kpD"></div>
+      <div class="fg"><div class="lbl">Amal muddati</div><input class="inp" id="kpV" placeholder="30 kun"></div>
+      <div class="fg"><div class="lbl">Mas'ul</div><input class="inp" id="kpM" value="Komilxo'ja"></div>
+      <div class="fg"><div class="lbl">Telefon</div><input class="inp" id="kpP" value="+998 93 566 55 26"></div>
+      <div class="fg"><div class="lbl">Email</div><input class="inp" id="kpE" placeholder="email@gmail.com"></div>
+      <div class="fg"><div class="lbl">QQS %</div><input class="inp" type="number" id="kpN" value="12" oninput="updT()"></div>
+    </div>
+
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div style="font-size:.78rem;font-weight:500;color:var(--tx2)">📊 Narx variantlari</div>
+        <div class="variants-bar">
+          <div class="var-tab active std" id="vt-std" onclick="swV('std')"><span class="vdot std"></span>Standart</div>
+          <div class="var-tab mid" id="vt-mid" onclick="swV('mid')"><span class="vdot mid"></span>O'rta</div>
+          <div class="var-tab prm" id="vt-prm" onclick="swV('prm')"><span class="vdot prm"></span>Premium</div>
+        </div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <button class="btn btn-sm" onclick="copyVar()">📋 Nusxa</button>
+          <button class="btn btn-sm" onclick="clearVar()">🗑 Tozalash</button>
+          <button class="btn btn-sm btn-blue" onclick="openAddMod()">+ Mahsulot qo'shish</button>
+        </div>
+      </div>
+      <div class="form-row form-row-2" style="margin-bottom:10px">
+        <div class="fg"><div class="lbl">Variant nomi</div><input class="inp" id="vN" placeholder="Asosiy paket"></div>
+        <div class="fg"><div class="lbl">Tavsif</div><input class="inp" id="vD" placeholder="Qisqa izoh..."></div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>№</th>
+              <th style="width:50px">Rasm</th>
+              <th style="min-width:130px">Model</th>
+              <th style="min-width:150px">Nomi</th>
+              <th style="min-width:175px">Tavsif</th>
+              <th style="width:65px">Soni</th>
+              <th style="width:58px">Birlik</th>
+              <th style="min-width:105px">Tovar narxi</th>
+              <th style="min-width:105px">O'rnatish</th>
+              <th style="width:82px">QQS</th>
+              <th style="min-width:105px">Jami</th>
+              <th style="width:28px"></th>
+            </tr>
+          </thead>
+          <tbody id="kpBody"></tbody>
+        </table>
+        <button class="add-row" onclick="addRow()">＋ Yangi qator qo'shish</button>
+      </div>
+      <div class="totals">
+        <div class="totals-in">
+          <div class="tr2"><span class="tl2">Tovarlar:</span><span class="tv2" id="tG">0 so'm</span></div>
+          <div class="tr2"><span class="tl2">O'rnatish:</span><span class="tv2" id="tI">0 so'm</span></div>
+          <div class="tr2"><span class="tl2">Jami (QQS siz):</span><span class="tv2" id="tS">0 so'm</span></div>
+          <div class="tr2"><span class="tl2" id="tNL">QQS 12%:</span><span class="tv2" id="tNV">0 so'm</span></div>
+          <div class="tr2 tg2"><span class="tl2">UMUMIY JAMI:</span><span class="tv2" id="tTT">0 so'm</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-size:.72rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--tx3);margin-bottom:8px">📝 Shartlar va izohlar</div>
+      <textarea class="inp" id="kpNotes" rows="3" placeholder="Kafolat, to'lov shartlari...">• O'rnatish ishlariga 6 oy kafolat.
+• To'lov: 50% avans, qolgan 50% topshirishda.
+• Narxlar 30 kun davomida amal qiladi.</textarea>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PRODUCTS ══ -->
+<div class="page" id="tab-products">
+  <div style="max-width:1400px;margin:0 auto">
+    <div class="db-toolbar">
+      <div class="sw2" style="flex:1;min-width:180px">
+        <span class="si2">🔍</span>
+        <input class="inp sinp2" id="pSrch" placeholder="Model yoki nom..." oninput="rndProds()">
+      </div>
+      <span class="db-stats" id="dbStats"></span>
+      <button class="btn btn-blue btn-sm" onclick="openAddMod()">+ Yangi mahsulot</button>
+      <label class="btn btn-sm" style="cursor:pointer">
+        📥 Excel import
+        <input type="file" id="xlsInp" accept=".xlsx,.xls,.csv" style="display:none" onchange="importXLS(event)">
+      </label>
+      <button class="btn btn-sm" onclick="exportProds()">📤 Export</button>
+    </div>
+    <div style="font-size:.65rem;color:var(--tx3);margin-bottom:10px;padding:7px 10px;background:var(--sf2);border-radius:5px;border:1px solid var(--bd)">
+      💡 Excel ustunlari: <b style="color:var(--tx2)">Model | Nomi | Tavsif | Tovar narxi (UZS) | O'rnatish narxi | Birlik | Kategoriya</b> — yoki OKVISION formatida ham qabul qiladi
+    </div>
+    <div class="cat-filter" id="catFilter"></div>
+    <div class="prod-grid" id="pGrid"></div>
+  </div>
+</div>
+
+<!-- ══ SAVED ══ -->
+<div class="page" id="tab-saved">
+  <div style="max-width:960px;margin:0 auto" id="savedList"></div>
+</div>
+
+<!-- ══ PREVIEW ══ -->
+<div class="page" id="tab-preview">
+  <div class="prev-wrap" id="prevContent"></div>
+</div>
+
+<!-- ADD PRODUCT MODAL -->
+<div class="mbg" id="addMb">
+  <div class="md">
+    <h3>Mahsulot qo'shish / yangilash</h3>
+    <div class="md-img" id="mdImg" onclick="document.getElementById('mdImgF').click()">📦</div>
+    <input type="file" id="mdImgF" accept="image/*" style="display:none" onchange="prevMdImg(event)">
+    <div class="form-row form-row-2">
+      <div class="fg"><div class="lbl">Model *</div><input class="inp" id="mMo" placeholder="DS-2CD2143G2-I"></div>
+      <div class="fg"><div class="lbl">Narx USD ($) — avtomatik UZS</div>
+        <input class="inp" type="number" id="mPrUsd" placeholder="0" oninput="
+          const uzs=Math.round((parseFloat(this.value)||0)*window._usdRate);
+          if(uzs) document.getElementById('mPr').value=uzs;
+        ">
+      </div>
+      <div class="fg"><div class="lbl">Tovar narxi (so'm, QQS siz)</div><input class="inp" type="number" id="mPr" placeholder="0" oninput="
+          const usd=Math.round((parseFloat(this.value)||0)/window._usdRate);
+          if(usd) document.getElementById('mPrUsd').value=usd;
+      "></div>
+      <div class="fg"><div class="lbl">QQS bilan (so'm) — faqat ko'rsatish</div>
+        <div style="padding:7px 10px;background:var(--sf3);border:1px solid var(--bd);border-radius:6px;font-size:.82rem;color:var(--ac4)" id="mPrNds">0 so'm</div>
+      </div>
+      <div class="fg"><div class="lbl">O'rnatish narxi (so'm)</div><input class="inp" type="number" id="mIn" placeholder="0"></div>
+      <div class="fg"><div class="lbl">Birlik</div><input class="inp" id="mUn" value="dona"></div>
+      <div class="fg full"><div class="lbl">Nomi</div><input class="inp" id="mNm" placeholder="Qurilma nomi"></div>
+      <div class="fg full"><div class="lbl">Texnik tavsif</div><textarea class="inp" id="mSp" rows="2" placeholder="4MP, IP66, PoE..."></textarea></div>
+      <div class="fg"><div class="lbl">Kategoriya</div><input class="inp" id="mCt" placeholder="Kameralar"></div>
+      <div class="fg"><div class="lbl">Brand</div><input class="inp" id="mBr" placeholder="Hikvision"></div>
+    </div>
+    <div class="md-acts">
+      <button class="btn btn-sm" onclick="closeMd()">Bekor</button>
+      <button class="btn btn-sm btn-blue" onclick="saveProd()">Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<!-- EMAIL MODAL -->
+<div class="mbg" id="emailMb">
+  <div class="md">
+    <h3>📧 Email yuborish</h3>
+    <div class="form-row">
+      <div class="fg full"><div class="lbl">Kimga</div><input class="inp" id="eTo" placeholder="mijoz@gmail.com"></div>
+      <div class="fg full"><div class="lbl">Mavzu</div><input class="inp" id="eSbj" value="Tijorat taklifi — Komilxo'ja AI Loyihachi"></div>
+      <div class="fg full"><div class="lbl">Xabar</div><textarea class="inp" id="eBody" rows="4">Hurmatli mijoz,
+
+Tijorat taklifimizni ko'rib chiqishingizni so'raymiz.
+
+Savollar uchun: +998 93 566 55 26
+
+Hurmat bilan, Komilxo'ja AI Loyihachi</textarea></div>
+    </div>
+    <div class="md-acts">
+      <button class="btn btn-sm" onclick="closeEmailMd()">Bekor</button>
+      <button class="btn btn-sm btn-blue" onclick="sendEmail()">📧 Yuborish</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+const DBK='kp_pro2_db', SVK='kp_pro2_sv';
+let prods=[], sv=[], mImg='', curV='std', curCat='all';
+let vars={
+  std:{name:'Standart paket',desc:'Asosiy xavfsizlik tizimi',rows:[]},
+  mid:{name:"O'rta paket",desc:"Kengaytirilgan tizim",rows:[]},
+  prm:{name:'Premium paket',desc:"To'liq integratsiya",rows:[]}
+};
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
+function fmt(n){return Math.round(n||0).toLocaleString('ru-RU');}
+function esc(s){return(s||'').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+function init(){
+  try{prods=JSON.parse(localStorage.getItem(DBK)||'[]');}catch(e){prods=[];}
+  try{sv=JSON.parse(localStorage.getItem(SVK)||'[]');}catch(e){sv=[];}
+  
+  // If no local DB, load from OKVISION_DB
+  if(!prods.length && typeof OKVISION_DB !== 'undefined'){
+    prods = OKVISION_DB.map(p=>({
+      id: uid(),
+      model: p.model,
+      name: p.name,
+      spec: p.spec||'',
+      price: p.price||0,
+      install: p.install||0,
+      unit: p.unit||'dona',
+      cat: p.cat||'Boshqa',
+      brand: p.brand||p.cat||'',
+      img: p.img||'📦'
+    }));
+    saveProds();
+    ntf(`✅ ${prods.length} ta mahsulot OKVISION bazasidan yuklandi`,'s');
+  }
+  
+  document.getElementById('kpD').value = new Date().toISOString().slice(0,10);
+  document.getElementById('vN').value = vars.std.name;
+  document.getElementById('vD').value = vars.std.desc;
+  rndKP(); rndProds(); rndSaved();
+}
+
+function saveProds(){localStorage.setItem(DBK,JSON.stringify(prods));}
+function saveSv(){localStorage.setItem(SVK,JSON.stringify(sv));}
+
+// ════════════════════════════════════════
+// TABS
+// ════════════════════════════════════════
+function showTab(tab, btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(tab==='preview') doPreview();
+  if(tab==='saved') rndSaved();
+  if(tab==='products') rndProds();
+}
+
+// ════════════════════════════════════════
+// VARIANTS
+// ════════════════════════════════════════
+function swV(v){
+  vars[curV].name = document.getElementById('vN').value;
+  vars[curV].desc = document.getElementById('vD').value;
+  curV = v;
+  ['std','mid','prm'].forEach(x=>{
+    const el=document.getElementById('vt-'+x);
+    el.className='var-tab '+x+(x===v?' active':'');
+  });
+  document.getElementById('vN').value = vars[v].name;
+  document.getElementById('vD').value = vars[v].desc;
+  rndKP(); updT();
+}
+
+function getR(){return vars[curV].rows;}
+
+// ════════════════════════════════════════
+// KP TABLE RENDER
+// ════════════════════════════════════════
+function rndKP(){
+  const rows = getR();
+  const tb = document.getElementById('kpBody');
+  if(!rows.length){
+    tb.innerHTML=`<tr><td colspan="12"><div class="empty2"><div class="ei2">📋</div><div style="font-size:.82rem">Chapdan mahsulot tanlang yoki "+ Yangi qator" tugmasini bosing</div></div></td></tr>`;
+    return;
+  }
+  tb.innerHTML = rows.map((r,i)=>`
+    <tr id="row-${r.id}">
+      <td>${i+1}</td>
+      <td>
+        <div class="ic" title="Rasm yuklash">
+          ${r.img&&r.img.startsWith('data:')?`<img src="${r.img}">`:(r.img&&r.img.length<=4?r.img:'📦')}
+          <input type="file" class="icu" accept="image/*" onchange="rowImg('${r.id}',event)">
+        </div>
+      </td>
+      <td>
+        <div class="aw">
+          <input class="ci" value="${esc(r.model)}" placeholder="Model yozing..." 
+            oninput="onAC(this,'${r.id}')" 
+            onblur="hideAC()" 
+            onfocus="onAC(this,'${r.id}')">
+          <div class="al" id="al-${r.id}"></div>
+        </div>
+      </td>
+      <td><input class="ci" value="${esc(r.name)}" placeholder="Nomi..." oninput="uf('${r.id}','name',this.value)"></td>
+      <td><input class="ci" value="${esc(r.spec)}" placeholder="Tavsif..." oninput="uf('${r.id}','spec',this.value)"></td>
+      <td><input class="ci nc" type="number" min="1" value="${r.qty||1}" oninput="uf('${r.id}','qty',this.value);updT()"></td>
+      <td>
+        <select class="us" onchange="uf('${r.id}','unit',this.value)">
+          ${['dona','ta','m','sm','kg','l','komplekt','juft'].map(u=>`<option${r.unit===u?' selected':''}>${u}</option>`).join('')}
+        </select>
+      </td>
+      <td><input class="ci nr" type="number" value="${r.price||0}" oninput="uf('${r.id}','price',this.value);updT()"></td>
+      <td><input class="ci nr" type="number" value="${r.install||0}" oninput="uf('${r.id}','install',this.value);updT()" style="color:var(--ac2)"></td>
+      <td style="color:var(--tx2);font-size:.73rem" id="qqs-${r.id}">${fmt(calcQQS(r))}</td>
+      <td style="font-weight:600" id="tot-${r.id}">${fmt(calcTot(r))}</td>
+      <td><button style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:.85rem;padding:3px 5px" onclick="delRow('${r.id}')">×</button></td>
+    </tr>`).join('');
+}
+
+function nds(){return parseFloat(document.getElementById('kpN').value)||12;}
+function calcQQS(r){return((r.price||0)+(r.install||0))*(r.qty||1)*(nds()/100);}
+function calcTot(r){return((r.price||0)+(r.install||0))*(r.qty||1)*(1+nds()/100);}
+
+function uf(id,f,v){
+  const r=getR().find(x=>x.id===id);if(!r)return;
+  r[f]=['qty','price','install'].includes(f)?(parseFloat(v)||0):v;
+  if(f==='price'&&r.pid){const p=prods.find(x=>x.id===r.pid);if(p){p.price=r.price;saveProds();}}
+  if(f==='install'&&r.pid){const p=prods.find(x=>x.id===r.pid);if(p){p.install=r.install;saveProds();}}
+}
+
+function addRow(){
+  getR().push({id:uid(),pid:null,model:'',name:'',spec:'',qty:1,unit:'dona',price:0,install:0,img:'📦'});
+  rndKP();updT();
+  setTimeout(()=>{const inp=document.querySelectorAll('#kpBody tr:last-child input');if(inp[2])inp[2].focus();},50);
+}
+function delRow(id){vars[curV].rows=getR().filter(x=>x.id!==id);rndKP();updT();}
+
+function rowImg(id,ev){
+  const file=ev.target.files[0];if(!file)return;
+  const rd=new FileReader();
+  rd.onload=e=>{
+    const r=getR().find(x=>x.id===id);if(!r)return;
+    r.img=e.target.result;
+    if(r.pid){const p=prods.find(x=>x.id===r.pid);if(p){p.img=r.img;saveProds();}}
+    rndKP();
+  };rd.readAsDataURL(file);
+}
+
+function copyVar(){
+  const src=vars[curV];
+  const nx={std:'mid',mid:'prm',prm:'std'}[curV];
+  vars[nx].rows=JSON.parse(JSON.stringify(src.rows)).map(r=>({...r,id:uid()}));
+  ntf('Nusxa olindi → '+(nx==='std'?'Standart':nx==='mid'?"O'rta":'Premium'),'s');
+}
+function clearVar(){
+  if(!getR().length||confirm('Bu variantni tozalaysizmi?')){vars[curV].rows=[];rndKP();updT();}
+}
+
+// ════════════════════════════════════════
+// AUTOCOMPLETE
+// ════════════════════════════════════════
+let acIdx = -1;
+function onAC(inp, rid){
+  const q = (inp.value||'').toLowerCase();
+  const al = document.getElementById('al-'+rid);
+  if(!al) return;
+  acIdx = -1;
+  if(!q){al.classList.remove('open');return;}
+  
+  const m = prods.filter(p=>
+    p.model.toLowerCase().includes(q) ||
+    p.name.toLowerCase().includes(q) ||
+    (p.spec||'').toLowerCase().includes(q)
+  ).slice(0,8);
+  
+  if(!m.length){al.classList.remove('open');return;}
+  al.innerHTML = m.map((p,i)=>`
+    <div class="ai" id="ai-${rid}-${i}" onmousedown="apAC('${rid}','${p.id}')">
+      <div class="ai-img">${p.img&&p.img.startsWith('data:')?`<img src="${p.img}">`:(p.img&&p.img.length<=4?p.img:'📦')}</div>
+      <div style="flex:1;min-width:0">
+        <div class="ai-model">${p.model}</div>
+        <div class="ai-name">${(p.name||'').slice(0,40)}</div>
+        <span class="ai-cat">${p.cat||''}</span>
+      </div>
+      <div class="ai-price">
+        <div>${fmt(p.price)} so'm${p.priceUsd?`<br><span style="color:var(--ac4);font-size:.6rem">$${p.priceUsd}</span>`:''}</div>
+        ${p.install?`<div style="color:var(--ac2);font-size:.6rem">+${fmt(p.install)} o'rn.</div>`:''}
+      </div>
+    </div>`).join('');
+  al.classList.add('open');
+  
+  // Keyboard navigation
+  inp.onkeydown = function(e){
+    const items = al.querySelectorAll('.ai');
+    if(e.key==='ArrowDown'){e.preventDefault();acIdx=Math.min(acIdx+1,items.length-1);items.forEach((el,i)=>el.classList.toggle('focused',i===acIdx));}
+    else if(e.key==='ArrowUp'){e.preventDefault();acIdx=Math.max(acIdx-1,0);items.forEach((el,i)=>el.classList.toggle('focused',i===acIdx));}
+    else if(e.key==='Enter'&&acIdx>=0){e.preventDefault();items[acIdx].dispatchEvent(new MouseEvent('mousedown'));}
+    else if(e.key==='Escape'){al.classList.remove('open');}
+  };
+}
+
+function apAC(rid,pid){
+  const r=getR().find(x=>x.id===rid);
+  const p=prods.find(x=>x.id===pid);
+  if(!r||!p)return;
+  Object.assign(r,{pid:p.id,model:p.model,name:p.name||'',spec:p.spec||'',
+    price:p.price||0,install:p.install||0,unit:p.unit||'dona',img:p.img||'📦'});
+  rndKP();updT();
+}
+function hideAC(){setTimeout(()=>document.querySelectorAll('.al').forEach(el=>el.classList.remove('open')),180);}
+
+// ════════════════════════════════════════
+// TOTALS
+// ════════════════════════════════════════
+function updT(){
+  const rows=getR(), n=nds();
+  const g=rows.reduce((s,r)=>s+(r.price||0)*(r.qty||1),0);
+  const i=rows.reduce((s,r)=>s+(r.install||0)*(r.qty||1),0);
+  const sub=g+i, nv=sub*(n/100);
+  document.getElementById('tG').textContent=fmt(g)+' so\'m';
+  document.getElementById('tI').textContent=fmt(i)+' so\'m';
+  document.getElementById('tS').textContent=fmt(sub)+' so\'m';
+  document.getElementById('tNV').textContent=fmt(nv)+' so\'m';
+  document.getElementById('tTT').textContent=fmt(sub+nv)+' so\'m';
+  document.getElementById('tNL').textContent='QQS '+n+'%:';
+  rows.forEach(r=>{
+    const q=document.getElementById('qqs-'+r.id), t=document.getElementById('tot-'+r.id);
+    if(q)q.textContent=fmt(calcQQS(r));
+    if(t)t.textContent=fmt(calcTot(r));
+  });
+}
+
+// ════════════════════════════════════════
+// PRODUCTS PAGE
+// ════════════════════════════════════════
+function rndProds(){
+  const q=(document.getElementById('pSrch')||{value:''}).value.toLowerCase();
+  const grid=document.getElementById('pGrid');
+  
+  // Category filter render
+  const cats=['all',...new Set(prods.map(p=>p.cat).filter(Boolean))];
+  const cf=document.getElementById('catFilter');
+  if(cf){
+    cf.innerHTML=cats.slice(0,20).map(c=>`
+      <div class="cat-btn${c===curCat?' active':''}" onclick="setCat('${c}')">${c==='all'?'Hammasi':c}</div>
+    `).join('');
+  }
+  
+  let f=prods;
+  if(curCat!=='all') f=f.filter(p=>p.cat===curCat);
+  if(q) f=f.filter(p=>p.model.toLowerCase().includes(q)||p.name.toLowerCase().includes(q));
+  
+  const st=document.getElementById('dbStats');
+  if(st) st.textContent=`${f.length} / ${prods.length} mahsulot`;
+  
+  if(!f.length){grid.innerHTML='<div class="empty2"><div class="ei2">📦</div><div>Topilmadi</div></div>';return;}
+  grid.innerHTML=f.slice(0,200).map(p=>`
+    <div class="pc" onclick="editProd('${p.id}')">
+      <button class="pc-del" onclick="event.stopPropagation();delProd('${p.id}')">✕</button>
+      <div class="pc-img">${p.img&&p.img.startsWith('data:')?`<img src="${p.img}">`:(p.img&&p.img.length<=4?p.img:'📦')}</div>
+      <div class="pc-model">${p.model}</div>
+      <div class="pc-name">${p.name||'—'}</div>
+      <div class="pc-price">📦 ${fmt(p.price)} so'm${p.priceUsd?` ($${p.priceUsd})`:''}</div>
+      ${p.install?`<div class="pc-inst">🔧 ${fmt(p.install)} so'm</div>`:''}
+      <div class="pc-cat">${p.cat||''}</div>
+    </div>`).join('');
+  if(f.length>200) grid.innerHTML+=`<div style="padding:12px;color:var(--tx3);font-size:.75rem;grid-column:1/-1">... va yana ${f.length-200} ta mahsulot. Qidiruv orqali toping.</div>`;
+}
+
+function setCat(c){curCat=c;rndProds();}
+function delProd(id){
+  if(!confirm("O'chirasizmi?"))return;
+  prods=prods.filter(x=>x.id!==id);saveProds();rndProds();ntf("O'chirildi",'e');
+}
+function editProd(id){openAddMod(id);}
+
+// ════════════════════════════════════════
+// EXCEL IMPORT (MULTI-SHEET)
+// ════════════════════════════════════════
+function importXLS(ev){
+  const file=ev.target.files[0];if(!file)return;
+  ntf('Excel o\'qilmoqda...','i');
+  const rd=new FileReader();
+  rd.onload=e=>{
+    try{
+      const wb=XLSX.read(e.target.result,{type:'binary'});
+      let cnt=0, upd=0;
+      
+      wb.SheetNames.forEach(sName=>{
+        const ws=wb.Sheets[sName];
+        const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+        if(!data.length) return;
+        
+        const hdr=(data[0]||[]).map(h=>(h||'').toString().toLowerCase());
+        const ci=keys=>{for(const k of keys){const i=hdr.findIndex(h=>h.includes(k));if(i>=0)return i;}return -1;};
+        
+        // Detect columns - OKVISION va boshqa formatlar
+        // OKVISION: A=Rasm, B=Naименование, C=Характеристика, D=ЦенаUSD, E=Цена с НДС
+        let mI  = ci(['наименование','model','номенклатура','артикул','nomi','name']);
+        let spI = ci(['характеристик','описание','spec','tavsif']);
+        let usdI= ci(['ценаusd','цена usd','usd','dollar','$']);
+        let ndsI= ci(['цена с ндс','с ндс','ндс','uzs','нарх с','qqs']);
+        let instI=ci(["o'rnatish",'установка','монтаж','install']);
+        let uI  = ci(['birlik','unit','ед.','ед']);
+
+        // OKVISION default fallback: col index (0-based)
+        // A=0 img, B=1 name, C=2 spec, D=3 usd, E=4 nds_uzs
+        if(mI<0)   mI  =1;
+        if(spI<0)  spI =2;
+        if(usdI<0) usdI=3;
+        if(ndsI<0) ndsI=4;
+
+        // Try to get current USD rate from calculator page if available
+        // Otherwise use 12900 default
+        const usdRate = window._usdRate || 12900;
+        const ndsRate = 12; // QQS 12%
+
+        data.slice(1).forEach(row=>{
+          const rawName=String(row[mI]||'').trim();
+          if(!rawName||rawName==='nan'||rawName.length<2) return;
+
+          // Get USD price (ЦенаUSD column)
+          const usdVal=parseFloat(String(row[usdI]||'').replace(/[^\d.]/g,''))||0;
+          // Get UZS with NDS price (Цена с НДС column)
+          const ndsUzsVal=parseFloat(String(row[ndsI]||'').replace(/[^\d.]/g,''))||0;
+
+          let price=0;
+          if(ndsUzsVal>0){
+            // "Цена с НДС" = UZS with NDS already included
+            // Store as price WITHOUT NDS (so our system can add NDS itself)
+            price = Math.round(ndsUzsVal / (1 + ndsRate/100));
+          } else if(usdVal>0){
+            // Convert USD -> UZS without NDS
+            price = Math.round(usdVal * usdRate);
+          }
+          if(!price) return;
+
+          const spec=String(row[spI]||'').replace(/[\r\n]+/g,' ').trim().slice(0,200);
+          const unit=String(row[uI]||'dona').trim()||'dona';
+          const install=parseFloat(String(row[instI]||'').replace(/[^\d.]/g,''))||0;
+          const priceUsd=usdVal||Math.round(price/usdRate);
+
+          // Model = last space-separated word from name (e.g. "KANIHAD Kamera DS-2CD2143" -> "DS-2CD2143")
+          const parts=rawName.trim().split(/\s+/);
+          const model=parts.length>1?parts[parts.length-1]:rawName;
+
+          const ex=prods.find(p=>p.model===model||p.name===rawName);
+          if(ex){
+            if(price)   ex.price=price;
+            if(priceUsd) ex.priceUsd=priceUsd;
+            if(install) ex.install=install;
+            if(spec)    ex.spec=spec;
+            upd++;
+          } else {
+            prods.push({
+              id:uid(),model:model.slice(0,40),name:rawName.slice(0,80),
+              spec,price,priceUsd,install,unit,
+              cat:sName.trim(),brand:sName.trim(),img:'📦'
+            });
+            cnt++;
+          }
+        });
+      });
+      
+      saveProds();rndProds();
+      ntf(`✅ ${cnt} yangi, ${upd} yangilandi (${wb.SheetNames.length} sheet)`,'s');
+    } catch(err){
+      ntf('Xato: '+err.message,'e');
+      console.error(err);
+    }
+  };
+  rd.readAsBinaryString(file);
+  ev.target.value='';
+}
+
+function exportProds(){
+  const ws=XLSX.utils.json_to_sheet(prods.map(p=>({
+    Model:p.model,Nomi:p.name,Tavsif:p.spec,
+    'Tovar narxi':p.price,"O'rnatish":p.install||0,
+    Birlik:p.unit,Kategoriya:p.cat,Brand:p.brand
+  })));
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Mahsulotlar');
+  XLSX.writeFile(wb,'mahsulotlar_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  ntf('Excel yuklandi','s');
+}
+
+// ════════════════════════════════════════
+// ADD/EDIT PRODUCT MODAL
+// ════════════════════════════════════════
+function openAddMod(id){
+  mImg='';
+  const el=document.getElementById('mdImg');
+  delete el.dataset.eid;
+  if(id){
+    const p=prods.find(x=>x.id===id);if(!p)return;
+    document.getElementById('mMo').value=p.model||'';
+    document.getElementById('mPr').value=p.price||0;
+    document.getElementById('mPrUsd').value=p.priceUsd||Math.round((p.price||0)/window._usdRate)||0;
+    document.getElementById('mPrNds').textContent=Math.round((p.price||0)*1.12).toLocaleString('ru-RU')+' so\'m';
+    document.getElementById('mIn').value=p.install||0;
+    document.getElementById('mNm').value=p.name||'';
+    document.getElementById('mSp').value=p.spec||'';
+    document.getElementById('mUn').value=p.unit||'dona';
+    document.getElementById('mCt').value=p.cat||'';
+    document.getElementById('mBr').value=p.brand||'';
+    if(p.img&&p.img.startsWith('data:')){mImg=p.img;el.innerHTML=`<img src="${p.img}" style="width:100%;height:100%;object-fit:cover;border-radius:7px">`;}
+    else el.innerHTML=p.img||'📦';
+    el.dataset.eid=id;
+  } else {
+    ['mMo','mNm','mSp','mCt','mBr'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('mPr').value='';
+    document.getElementById('mPrUsd').value='';
+    document.getElementById('mPrNds').textContent='0 so\'m';
+    document.getElementById('mIn').value='';
+    document.getElementById('mUn').value='dona';el.innerHTML='📦';
+  }
+  document.getElementById('mPr').addEventListener('input', function(){
+    const ndsVal=Math.round((parseFloat(this.value)||0)*1.12);
+    document.getElementById('mPrNds').textContent=ndsVal.toLocaleString('ru-RU')+' so\'m';
+  });
+  document.getElementById('mPrUsd').addEventListener('input', function(){
+    const uzs=Math.round((parseFloat(this.value)||0)*window._usdRate);
+    const ndsVal=Math.round(uzs*1.12);
+    document.getElementById('mPrNds').textContent=ndsVal.toLocaleString('ru-RU')+' so\'m';
+  });
+  document.getElementById('addMb').classList.add('open');
+  document.getElementById('mMo').focus();
+}
+function closeMd(){document.getElementById('addMb').classList.remove('open');}
+function prevMdImg(ev){
+  const file=ev.target.files[0];if(!file)return;
+  const rd=new FileReader();
+  rd.onload=e=>{mImg=e.target.result;document.getElementById('mdImg').innerHTML=`<img src="${mImg}" style="width:100%;height:100%;object-fit:cover;border-radius:7px">`;};
+  rd.readAsDataURL(file);
+}
+function saveProd(){
+  const model=document.getElementById('mMo').value.trim();
+  if(!model){ntf('Model kiritish shart!','e');return;}
+  const eid=document.getElementById('mdImg').dataset.eid;
+  const d={model,
+    price:parseFloat(document.getElementById('mPr').value)||0,
+    priceUsd:parseFloat(document.getElementById('mPrUsd').value)||0,
+    install:parseFloat(document.getElementById('mIn').value)||0,
+    name:document.getElementById('mNm').value.trim(),
+    spec:document.getElementById('mSp').value.trim(),
+    unit:document.getElementById('mUn').value.trim()||'dona',
+    cat:document.getElementById('mCt').value.trim()||'Boshqa',
+    brand:document.getElementById('mBr').value.trim(),
+    img:mImg||'📦'};
+  if(eid){const p=prods.find(x=>x.id===eid);if(p){Object.assign(p,d);ntf('Yangilandi','s');}}
+  else{
+    if(prods.find(p=>p.model===model)){ntf('Model allaqachon bor!','e');return;}
+    prods.push({id:uid(),...d});ntf("Qo'shildi",'s');
+  }
+  saveProds();rndProds();closeMd();
+}
+
+// ════════════════════════════════════════
+// SAVE KP
+// ════════════════════════════════════════
+function getMeta(){
+  return{
+    client:document.getElementById('kpC').value,
+    object:document.getElementById('kpO').value,
+    date:document.getElementById('kpD').value,
+    validity:document.getElementById('kpV').value,
+    manager:document.getElementById('kpM').value,
+    phone:document.getElementById('kpP').value,
+    email:document.getElementById('kpE').value,
+    nds:nds(),
+    notes:document.getElementById('kpNotes').value
+  };
+}
+function calcGrand(rows,n){
+  const s=rows.reduce((a,r)=>a+((r.price||0)+(r.install||0))*(r.qty||1),0);
+  return s*(1+n/100);
+}
+function saveKP(){
+  vars[curV].name=document.getElementById('vN').value;
+  vars[curV].desc=document.getElementById('vD').value;
+  const meta=getMeta();
+  const kp={
+    id:uid(),meta,
+    vars:JSON.parse(JSON.stringify(vars)),
+    grand:{std:calcGrand(vars.std.rows,meta.nds),mid:calcGrand(vars.mid.rows,meta.nds),prm:calcGrand(vars.prm.rows,meta.nds)},
+    at:new Date().toISOString()
+  };
+  sv.unshift(kp);if(sv.length>60)sv.pop();
+  saveSv();rndSaved();ntf('✅ KP saqlandi!','s');
+}
+
+// ════════════════════════════════════════
+// SAVED LIST
+// ════════════════════════════════════════
+function rndSaved(){
+  const list=document.getElementById('savedList');if(!list)return;
+  if(!sv.length){list.innerHTML='<div class="empty2"><div class="ei2">🗂</div><div>Hali saqlangan KP yo\'q</div></div>';return;}
+  list.innerHTML=sv.map(kp=>`
+    <div class="kp-li">
+      <div class="kp-li-info">
+        <div class="kp-li-title">${kp.meta.client||"Noma'lum mijoz"} — ${kp.meta.object||'Manzil yo\'q'}</div>
+        <div class="kp-li-meta">
+          <span class="badge bs">Std: ${fmt(kp.grand.std)} so'm</span>
+          <span class="badge bm">O'rta: ${fmt(kp.grand.mid)} so'm</span>
+          <span class="badge bp">Prm: ${fmt(kp.grand.prm)} so'm</span>
+          <span style="color:var(--tx3)">${kp.meta.date||''}</span>
+        </div>
+      </div>
+      <div class="kp-li-acts">
+        <button class="btn btn-sm" onclick="loadKP('${kp.id}')">Yuklash</button>
+        <button class="btn btn-sm btn-blue" onclick="pdfSaved('${kp.id}')">PDF</button>
+        <button class="btn btn-sm" style="color:var(--ac3);border-color:rgba(247,129,102,.2)" onclick="delSv('${kp.id}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+function loadKP(id){
+  const kp=sv.find(x=>x.id===id);if(!kp)return;
+  ['kpC','kpO','kpD','kpV','kpM','kpP','kpE','kpNotes'].forEach(k=>{
+    const map={kpC:'client',kpO:'object',kpD:'date',kpV:'validity',kpM:'manager',kpP:'phone',kpE:'email',kpNotes:'notes'};
+    document.getElementById(k).value=kp.meta[map[k]]||'';
+  });
+  document.getElementById('kpN').value=kp.meta.nds||12;
+  vars=JSON.parse(JSON.stringify(kp.vars));
+  document.getElementById('vN').value=vars[curV].name;
+  document.getElementById('vD').value=vars[curV].desc;
+  showTab('editor',document.querySelectorAll('.tab-btn')[0]);
+  rndKP();updT();ntf('KP yuklandi','s');
+}
+function delSv(id){sv=sv.filter(x=>x.id!==id);saveSv();rndSaved();ntf("O'chirildi",'i');}
+
+// ════════════════════════════════════════
+// PREVIEW
+// ════════════════════════════════════════
+function doPreview(){
+  vars[curV].name=document.getElementById('vN').value;
+  vars[curV].desc=document.getElementById('vD').value;
+  const meta=getMeta(), n=meta.nds;
+  const cv={std:{lbl:'Standart',cls:'std'},mid:{lbl:"O'rta",cls:'mid'},prm:{lbl:'Premium',cls:'prm'}};
+  const calc=rows=>{
+    const g=rows.reduce((s,r)=>s+(r.price||0)*(r.qty||1),0);
+    const i=rows.reduce((s,r)=>s+(r.install||0)*(r.qty||1),0);
+    const sub=g+i;return{g,i,sub,nv:sub*(n/100),grand:sub*(1+n/100)};
+  };
+  document.getElementById('prevContent').innerHTML=`
+    <div class="prev-hdr">
+      <div class="prev-company">
+        <div class="prev-logo-box">K</div>
+        <div>
+          <div class="prev-company-name">Komilxo'ja AI Loyihachi</div>
+          <div class="prev-company-sub">${meta.phone} · @Komilkhuja · Toshkent</div>
+        </div>
+      </div>
+      <div class="prev-title">Tijorat Taklifi</div>
+      <div class="prev-meta">
+        ${meta.client?`<span>👤 ${meta.client}</span>`:''}
+        ${meta.object?`<span>📍 ${meta.object}</span>`:''}
+        ${meta.date?`<span>📅 ${meta.date}</span>`:''}
+        ${meta.validity?`<span>⏱ ${meta.validity}</span>`:''}
+        ${meta.manager?`<span>👨‍💼 ${meta.manager}</span>`:''}
+      </div>
+    </div>
+    <div style="padding:16px 28px 6px;font-size:.75rem;color:var(--tx2)">Quyida 3 ta variant — o'zingizga mos kelganini tanlang:</div>
+    <div class="prev-vars">
+      ${['std','mid','prm'].map(v=>{
+        const rows=vars[v].rows, c=calc(rows), cf=cv[v];
+        return`<div class="vc ${cf.cls}${v==='std'?' sel':''}" onclick="selPV(this,'${v}')">
+          <div class="vc-hdr ${cf.cls}">${cf.lbl} — ${vars[v].name}</div>
+          <div class="vc-price">${fmt(c.grand)} <span style="font-size:.7rem;font-weight:400;color:var(--tx2)">so'm</span></div>
+          <div class="vc-sub">📦 ${fmt(c.g)} + 🔧 ${fmt(c.i)} + QQS ${n}%: ${fmt(c.nv)}</div>
+          ${vars[v].desc?`<div style="padding:0 14px 10px;font-size:.68rem;color:var(--tx2)">${vars[v].desc}</div>`:''}
+          <div class="vc-items">
+            ${rows.slice(0,5).map(r=>`
+              <div class="vi">
+                <div class="vi-img">${r.img&&r.img.startsWith('data:')?`<img src="${r.img}">`:(r.img&&r.img.length<=4?r.img:'📦')}</div>
+                <div class="vi-i"><div class="vi-m">${r.model}</div><div class="vi-s">${r.spec||r.name}</div></div>
+                <div class="vi-p">${fmt(((r.price||0)+(r.install||0))*(r.qty||1))} so'm</div>
+              </div>`).join('')}
+            ${rows.length>5?`<div style="font-size:.65rem;color:var(--tx3);padding:4px 7px">... va yana ${rows.length-5} ta</div>`:''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="prev-detail">
+      <div style="font-family:'Syne',sans-serif;font-size:.92rem;font-weight:700;margin-bottom:10px;color:var(--tx2)">Batafsil ro'yxat</div>
+      <div id="pvDtl">${buildDtbl(vars.std.rows,n)}</div>
+    </div>
+    ${meta.notes?`<div style="padding:0 28px 16px"><div style="background:var(--sf2);border:1px solid var(--bd);border-radius:7px;padding:12px 14px;font-size:.75rem;line-height:1.7;color:var(--tx2);white-space:pre-line">${meta.notes}</div></div>`:''}
+    <div class="prev-footer">
+      <div class="pf-contacts">
+        <span>📞 ${meta.phone||'+998 93 566 55 26'}</span>
+        <span>✈️ @Komilkhuja</span>
+        ${meta.email?`<span>📧 ${meta.email}</span>`:''}
+      </div>
+      <div style="display:flex;gap:7px">
+        <a href="https://t.me/Komilkhuja" target="_blank" class="btn btn-sm btn-blue">✈️ Telegram</a>
+      </div>
+    </div>`;
+}
+function selPV(el,v){
+  document.querySelectorAll('.vc').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById('pvDtl').innerHTML=buildDtbl(vars[v].rows,nds());
+}
+function buildDtbl(rows,n){
+  if(!rows.length)return'<div style="padding:14px;color:var(--tx3);font-size:.77rem">Bu variantda mahsulot yo\'q</div>';
+  const g=rows.reduce((s,r)=>s+(r.price||0)*(r.qty||1),0);
+  const i=rows.reduce((s,r)=>s+(r.install||0)*(r.qty||1),0);
+  const sub=g+i, nv=sub*(n/100);
+  return`<table class="dtbl">
+    <thead><tr><th>№</th><th>Model</th><th>Nomi</th><th>Soni</th><th>Tovar narxi</th><th>O'rnatish</th><th>QQS ${n}%</th><th>Jami</th></tr></thead>
+    <tbody>${rows.map((r,i)=>`<tr>
+      <td style="color:var(--tx3)">${i+1}</td>
+      <td style="font-weight:600">${r.model}</td>
+      <td style="color:var(--tx2);font-size:.7rem">${r.name||''}${r.spec?'<br><span style="color:var(--tx3)">'+r.spec.slice(0,60)+'</span>':''}</td>
+      <td style="text-align:center">${r.qty} ${r.unit}</td>
+      <td style="text-align:right">${fmt((r.price||0)*(r.qty||1))}</td>
+      <td style="text-align:right;color:var(--ac2)">${fmt((r.install||0)*(r.qty||1))}</td>
+      <td style="text-align:right;color:var(--tx2)">${fmt(((r.price||0)+(r.install||0))*(r.qty||1)*(n/100))}</td>
+      <td style="text-align:right;font-weight:600">${fmt(((r.price||0)+(r.install||0))*(r.qty||1)*(1+n/100))}</td>
+    </tr>`).join('')}</tbody>
+    <tfoot>
+      <tr style="background:var(--sf2)"><td colspan="4" style="text-align:right;color:var(--tx2);font-size:.7rem">Jami (QQS siz):</td><td style="text-align:right;color:var(--tx2)">${fmt(g)}</td><td style="text-align:right;color:var(--ac2)">${fmt(i)}</td><td colspan="2" style="text-align:right;color:var(--tx2)">${fmt(sub)} so'm</td></tr>
+      <tr style="background:rgba(88,166,255,.05)"><td colspan="6" style="text-align:right;font-weight:700">UMUMIY JAMI (QQS bilan):</td><td colspan="2" style="text-align:right;font-weight:700;color:var(--ac);font-size:.88rem">${fmt(sub+nv)} so'm</td></tr>
+    </tfoot>
+  </table>`;
+}
+
+// ════════════════════════════════════════
+// PDF
+// ════════════════════════════════════════
+function buildPDF(vKey, meta){
+  const {jsPDF}=window.jspdf;
+  const rows=vars[vKey].rows, n=meta.nds;
+  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+  const pw=297,ml=10,cw=277;let y=12;
+  doc.setFillColor(7,9,15);doc.rect(0,0,pw,30,'F');
+  doc.setTextColor(88,166,255);doc.setFontSize(15);doc.setFont('helvetica','bold');
+  doc.text("TIJORAT TAKLIFI",ml,11);
+  doc.setTextColor(160,200,240);doc.setFontSize(7.5);doc.setFont('helvetica','normal');
+  doc.text("KOMILXO'JA AI LOYIHACHI  |  "+meta.phone+"  |  @Komilkhuja",ml,18);
+  doc.text("Sana: "+meta.date,pw-ml-36,11);
+  if(meta.client)doc.text("Mijoz: "+meta.client,pw-ml-80,18);
+  if(meta.object)doc.text(meta.object,pw-ml-36,18,{maxWidth:26});
+  const vc={std:[88,166,255],mid:[63,185,80],prm:[227,179,65]};
+  const col=vc[vKey];
+  doc.setFillColor(...col);doc.rect(ml,22,cw,5,'F');
+  doc.setTextColor(0,0,0);doc.setFontSize(7);doc.setFont('helvetica','bold');
+  doc.text(vars[vKey].name,ml+2,25.2);
+  y=33;
+  const cs=[8,50,22,22,10,12,22,22,18,22];
+  const hs=["№","Model","Nomi","Tavsif","Soni","Birlik","Tovar","O'rn.","QQS","Jami"];
+  doc.setFillColor(20,25,35);doc.rect(ml,y,cw,7,'F');
+  doc.setTextColor(180,210,240);doc.setFontSize(6);doc.setFont('helvetica','bold');
+  let cx=ml+1;hs.forEach((h,i)=>{doc.text(h,cx,y+4.8);cx+=cs[i];});y+=7;
+  rows.forEach((r,idx)=>{
+    const rh=10;
+    doc.setFillColor(...(idx%2===0?[255,255,255]:[242,248,255]));
+    doc.rect(ml,y,cw,rh,'F');
+    doc.setDrawColor(200,215,230);doc.rect(ml,y,cw,rh,'S');
+    doc.setTextColor(0,0,0);doc.setFontSize(6.5);doc.setFont('helvetica','normal');
+    cx=ml+1;
+    const qv=((r.price||0)+(r.install||0))*(r.qty||1)*(n/100);
+    const tv=((r.price||0)+(r.install||0))*(r.qty||1)*(1+n/100);
+    [String(idx+1),r.model||'',(r.name||'').slice(0,20),(r.spec||'').slice(0,20),
+     String(r.qty||1),r.unit||'dona',fmt(r.price||0),fmt(r.install||0),fmt(qv),fmt(tv)
+    ].forEach((v,i)=>{doc.text(String(v),cx,y+6.5,{maxWidth:cs[i]-1});cx+=cs[i];});
+    y+=rh;if(y>180){doc.addPage();y=14;}
+  });
+  y+=5;
+  const g=rows.reduce((s,r)=>s+(r.price||0)*(r.qty||1),0);
+  const ins=rows.reduce((s,r)=>s+(r.install||0)*(r.qty||1),0);
+  const sub=g+ins, nv=sub*(n/100), grand=sub+nv;
+  const tx=ml+cw-78;
+  doc.setFillColor(235,245,255);doc.rect(tx,y,78,28,'F');
+  doc.setDrawColor(...col);doc.rect(tx,y,78,28,'S');
+  doc.setFontSize(7);doc.setFont('helvetica','normal');doc.setTextColor(80,80,80);
+  doc.text("Tovarlar jami:",tx+2,y+5);doc.text(fmt(g)+" so'm",tx+76,y+5,{align:'right'});
+  doc.text("O'rnatish jami:",tx+2,y+11);doc.text(fmt(ins)+" so'm",tx+76,y+11,{align:'right'});
+  doc.text("QQS "+n+"%:",tx+2,y+17);doc.text(fmt(nv)+" so'm",tx+76,y+17,{align:'right'});
+  doc.setFillColor(...col);doc.rect(tx,y+20,78,8,'F');
+  doc.setTextColor(0,0,0);doc.setFont('helvetica','bold');doc.setFontSize(8.5);
+  doc.text("UMUMIY JAMI:",tx+2,y+25.5);doc.text(fmt(grand)+" so'm",tx+76,y+25.5,{align:'right'});
+  if(meta.notes){
+    y+=35;doc.setFontSize(6.5);doc.setFont('helvetica','normal');doc.setTextColor(100,120,140);
+    meta.notes.split('\n').slice(0,4).forEach(l=>{doc.text(l,ml,y);y+=4;});
+  }
+  doc.setFillColor(7,9,15);doc.rect(0,193,pw,10,'F');
+  doc.setTextColor(80,130,180);doc.setFontSize(6);
+  doc.text("Komilxo'ja AI Loyihachi  |  "+meta.phone+"  |  @Komilkhuja  |  O'zbekiston bo'ylab xizmat",pw/2,199,{align:'center'});
+  return doc;
+}
+function exportPDF(){
+  if(!vars[curV].rows.length){ntf('KP bo\'sh!','e');return;}
+  vars[curV].name=document.getElementById('vN').value;
+  const meta=getMeta();
+  buildPDF(curV,meta).save(`KP_${(meta.client||'taklif').replace(/\s/g,'_')}_${['std','mid','prm'].indexOf(curV)===0?'Standart':curV==='mid'?"Orta":'Premium'}_${meta.date}.pdf`);
+  ntf('PDF yuklandi','s');
+}
+function pdfSaved(id){
+  const kp=sv.find(x=>x.id===id);if(!kp)return;
+  const bk=vars;vars=kp.vars;
+  ['std','mid','prm'].forEach(v=>{if(vars[v].rows.length)buildPDF(v,kp.meta).save(`KP_${(kp.meta.client||'').replace(/\s/g,'_')}_${v}_${kp.meta.date}.pdf`);});
+  vars=bk;ntf('PDF(lar) yuklandi','s');
+}
+
+// ════════════════════════════════════════
+// EMAIL
+// ════════════════════════════════════════
+function openEmailMod(){
+  const c=document.getElementById('kpC').value;
+  if(c)document.getElementById('eSbj').value=`Tijorat taklifi — ${c}`;
+  document.getElementById('emailMb').classList.add('open');
+}
+function closeEmailMd(){document.getElementById('emailMb').classList.remove('open');}
+function sendEmail(){
+  const to=document.getElementById('eTo').value.trim();
+  if(!to){ntf('Email kiriting!','e');return;}
+  window.open(`mailto:${to}?subject=${encodeURIComponent(document.getElementById('eSbj').value)}&body=${encodeURIComponent(document.getElementById('eBody').value)}`,'_blank');
+  closeEmailMd();ntf('Email dasturi ochildi','s');
+}
+
+// ════════════════════════════════════════
+// NOTIFY
+// ════════════════════════════════════════
+function ntf(msg,t='i'){
+  const n=document.getElementById('nt');
+  n.textContent=msg;n.className='nt show '+t;
+  clearTimeout(n._t);n._t=setTimeout(()=>n.classList.remove('show'),2500);
+}
+
+// ════════════════════════════════════════
+// USD RATE (real-time)
+// ════════════════════════════════════════
+window._usdRate = 12900;
+async function fetchUsdRate(){
+  try{
+    const r=await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.min.json');
+    const d=await r.json();
+    if(d.usd&&d.usd.uzs&&d.usd.uzs>1000){
+      window._usdRate=Math.round(d.usd.uzs);
+    }
+  }catch(e){}
+}
+fetchUsdRate();
+
+// ════════════════════════════════════════
+// INIT
+init();
+</script>
+</body>
+</html>

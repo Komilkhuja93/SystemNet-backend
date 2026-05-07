@@ -267,6 +267,10 @@ th:first-child,td:first-child{text-align:center;width:32px;color:var(--tx2)}
         </div>
         <div style="display:flex;gap:5px;flex-wrap:wrap">
           <button class="btn btn-sm" onclick="copyVar()">📋 Nusxa</button>
+          <label class="btn btn-sm btn-green" style="cursor:pointer" title="Excel price-listni shu variantga import qiling">
+            📥 Excel import
+            <input type="file" id="varXlsInp" accept=".xlsx,.xls,.csv" style="display:none" onchange="importToVariant(event)">
+          </label>
           <button class="btn btn-sm" onclick="clearVar()">🗑 Tozalash</button>
           <button class="btn btn-sm btn-blue" onclick="openAddMod()">+ Mahsulot qo'shish</button>
         </div>
@@ -1143,6 +1147,80 @@ function ntf(msg,t='i'){
   const n=document.getElementById('nt');
   n.textContent=msg;n.className='nt show '+t;
   clearTimeout(n._t);n._t=setTimeout(()=>n.classList.remove('show'),2500);
+}
+
+// ════════════════════════════════════════
+// EXCEL → KP VARIANT (to'g'ridan jadvalga)
+// ════════════════════════════════════════
+function importToVariant(ev){
+  const file=ev.target.files[0];if(!file)return;
+  ntf('Excel o\'qilmoqda...','i');
+  const rd=new FileReader();
+  rd.onload=e=>{
+    try{
+      const wb=XLSX.read(e.target.result,{type:'binary'});
+      let cnt=0;
+      wb.SheetNames.forEach(sName=>{
+        const ws=wb.Sheets[sName];
+        const data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+        if(!data.length) return;
+        const hdr=(data[0]||[]).map(h=>(h||'').toString().toLowerCase());
+        const ci=keys=>{for(const k of keys){const i=hdr.findIndex(h=>h.includes(k));if(i>=0)return i;}return -1;};
+        // Column detection — OKVISION va boshqa formatlar
+        let mI  =ci(['наименование','model','номенклатура','артикул','nomi','name']); if(mI<0) mI=1;
+        let spI =ci(['характеристик','описание','spec','tavsif']);                   if(spI<0) spI=2;
+        let usdI=ci(['ценаusd','цена usd','usd','dollar','$']);                      if(usdI<0) usdI=3;
+        let ndsI=ci(['цена с ндс','с ндс','ндс','uzs','нарх с','qqs']);              if(ndsI<0) ndsI=4;
+        let qtyI=ci(['сони','soni','qty','кол','количество','count']);
+        let uI  =ci(['birlik','unit','ед.','ед']);
+        let instI=ci(["o'rnatish",'установка','монтаж','install']);
+        const usdRate=window._usdRate||12900;
+        const ndsRate=12;
+        data.slice(1).forEach(row=>{
+          const rawName=String(row[mI]||'').trim();
+          if(!rawName||rawName==='nan'||rawName.length<2) return;
+          // Price calculation
+          const usdVal   =parseFloat(String(row[usdI]||'').replace(/[^\d.]/g,''))||0;
+          const ndsUzsVal=parseFloat(String(row[ndsI]||'').replace(/[^\d.]/g,''))||0;
+          let price=0;
+          if(ndsUzsVal>0)       price=Math.round(ndsUzsVal/(1+ndsRate/100));
+          else if(usdVal>0)     price=Math.round(usdVal*usdRate);
+          if(!price) return;
+          const spec   =String(row[spI]||'').replace(/[\r\n]+/g,' ').trim().slice(0,200);
+          const unit   =String(row[uI]||'dona').trim()||'dona';
+          const install=parseFloat(String(row[instI]||'').replace(/[^\d.]/g,''))||0;
+          const qty    =qtyI>=0?(parseInt(String(row[qtyI]||'').replace(/[^\d]/g,''))||1):1;
+          const priceUsd=usdVal||Math.round(price/usdRate);
+          // Model = oxirgi so'z nomdan
+          const parts=rawName.trim().split(/\s+/);
+          const model=parts.length>1?parts[parts.length-1]:rawName;
+          // Mahsulotlar bazasiga ham qo'shish (agar yo'q bo'lsa)
+          let prod=prods.find(p=>p.model===model||p.name===rawName);
+          if(!prod){
+            prod={id:uid(),model:model.slice(0,40),name:rawName.slice(0,80),spec,price,priceUsd,install,unit,cat:sName.trim(),brand:sName.trim(),img:'📦'};
+            prods.push(prod);
+          } else {
+            if(price) prod.price=price;
+            if(priceUsd) prod.priceUsd=priceUsd;
+          }
+          // KP variantiga qator qo'shish
+          const existing=getR().find(r=>r.pid===prod.id||r.model===model);
+          if(existing){ existing.qty+=qty; }
+          else {
+            getR().push({id:uid(),pid:prod.id,model:prod.model,name:prod.name,spec:prod.spec,qty,unit,price:prod.price,install:prod.install,img:prod.img});
+          }
+          cnt++;
+        });
+      });
+      saveProds();saveR();rndKP();updT();rndProds();
+      ntf(`✅ ${cnt} ta mahsulot KP ga qo'shildi`,'s');
+    }catch(err){
+      ntf('Xato: '+err.message,'e');
+      console.error(err);
+    }
+  };
+  rd.readAsBinaryString(file);
+  ev.target.value='';
 }
 
 // ════════════════════════════════════════
